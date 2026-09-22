@@ -1,4 +1,9 @@
-Mu's Developers
+Cu's Developer(s)
+===============
+
+mxreal64
+
+Mu's Developers (the original devs)
 ===============
 
 Mu was created and `mostly written by <https://github.com/mu-editor/mu/graphs/contributors>`_
