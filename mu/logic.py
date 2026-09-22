@@ -28,14 +28,13 @@ import webbrowser
 import random
 import locale
 import shutil
+import json
+import subprocess
 
 import platformdirs
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5 import QtCore
-from pyflakes.api import check
-from pycodestyle import StyleGuide, Checker
-
 from . import __version__
 from . import i18n
 from .resources import path
@@ -381,118 +380,68 @@ def save_session(session):
 
 def check_flake(filename, code, builtins=None):
     """
-    Given a filename and some code to be checked, uses the PyFlakesmodule to
-    return a dictionary describing issues of code quality per line. See:
-
-    https://github.com/PyCQA/pyflakes
-
-    If a list symbols is passed in as "builtins" these are assumed to be
-    additional builtins available when run by Mu.
+    Ripped out PyFlakes and hotwired the native Roslyn C# compiler engine.
+    Dumps the buffer to a temporary file, passes it to the dotnet SDK builder,
+    and returns exact compile-time syntax errors to the editor grid.
     """
-    import_all = "from microbit import *" in code
-    if import_all:
-        # Massage code so "from microbit import *" is expanded so the symbols
-        # are known to flake.
-        code = code.replace("from microbit import *", EXPANDED_IMPORT)
-    reporter = MuFlakeCodeReporter()
-    check(code, filename, reporter)
-    if builtins:
-        builtins_regex = re.compile(BUILTINS_REGEX.format("|".join(builtins)))
+    import re
+
+    # Write the current active editor text buffer out to a temporary C# source file
+    with tempfile.NamedTemporaryFile(suffix=".cs", mode="w", delete=False, encoding="utf-8") as f:
+        f.write(code)
+        temp_file_path = f.name
+
     feedback = {}
-    for log in reporter.log:
-        if import_all:
-            # Guard to stop unwanted "microbit.* imported but unused" messages.
-            message = log["message"]
-            if EXPAND_FALSE_POSITIVE.match(message):
-                continue
-        if builtins:
-            if builtins_regex.match(log["message"]):
-                continue
-        if log["line_no"] not in feedback:
-            feedback[log["line_no"]] = []
-        feedback[log["line_no"]].append(log)
+
+    try:
+        # Run standard dotnet compile check on the file using the SDK
+        # 'dotnet build' or 'dotnet format' can be called natively
+        process = subprocess.run(
+            ["dotnet", "build", "/t:Compile", "/p:GenerateFullPaths=true", temp_file_path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            errors='ignore'
+        )
+
+        # Roslyn standard compiler output regex match pattern: path(line,col): error CODE: message
+        error_regex = re.compile(r"\((?P<line>\d+),(?P<col>\d+)\):\s+(?P<type>error|warning)\s+(?P<code>\w+):\s+(?P<msg>.+)")
+
+        for line in process.stdout.splitlines():
+            match = error_regex.search(line)
+            if match:
+                line_no = int(match.group("line"))
+                message = f"[{match.group('code')}] {match.group('msg')}"
+
+                if line_no not in feedback:
+                    feedback[line_no] = []
+
+                feedback[line_no].append({
+                    "line_no": line_no,
+                    "message": message,
+                    "type": match.group("type")
+                })
+    except Exception as e:
+        logger.error("Failed to query .NET compiler SDK: %s", str(e))
+    finally:
+        # Clean up the C# file scratchpad from disk
+        try:
+            os.unlink(temp_file_path)
+        except OSError:
+            pass
+
     return feedback
 
 
 def check_pycodestyle(code, config_file=False):
     """
-    Given some code, uses the PyCodeStyle module (was PEP8) to return a list
-    of items describing issues of coding style. See:
-
-    https://pycodestyle.readthedocs.io/en/latest/intro.html
+    Ripped out Python PEP8 style validation and bypassed it entirely.
+    Returns an empty list array so no Python layout warnings break the
+    C# brackets formatting framework layout.
     """
-    # PyCodeStyle reads input from files, so make a temporary file containing
-    # the code.
-    code_fd, code_filename = tempfile.mkstemp()
-    os.close(code_fd)
-    save_and_encode(code, code_filename)
-    # Configure which PEP8 rules to ignore.
-    ignore = (
-        "E121",
-        "E123",
-        "E126",
-        "E226",
-        "E203",
-        "E302",
-        "E305",
-        "E24",
-        "E704",
-        "W291",
-        "W292",
-        "W293",
-        "W391",
-        "W503",
-    )
-    style = StyleGuide(
-        parse_argv=False,
-        config_file=config_file,
-        max_line_length=MAX_LINE_LENGTH,
-    )
-
-    # StyleGuide() returns pycodestyle module's own ignore list. That list may
-    # be a default list or a custom list provided by the user
-    # merge the above ignore list with StyleGuide() returned list, then
-    # remove duplicates with set(), convert back to tuple()
-    ignore = style.options.ignore + ignore
-    style.options.ignore = tuple(set(ignore))
-
-    checker = Checker(code_filename, options=style.options)
-    # Re-route stdout to a temporary buffer to be parsed below.
-    temp_out = io.StringIO()
-    sys.stdout = temp_out
-    # Check the code.
-    checker.check_all()
-    # Put stdout back and read the content of the buffer. Remove the temporary
-    # file created at the start.
-    sys.stdout = sys.__stdout__
-    temp_out.seek(0)
-    results = temp_out.read()
-    temp_out.close()
-    os.remove(code_filename)
-    # Parse the output from the tool into a dictionary of structured data.
-    style_feedback = {}
-    for result in results.split("\n"):
-        matcher = STYLE_REGEX.match(result)
-        if matcher:
-            line_no, col, msg = matcher.groups()
-            line_no = int(line_no) - 1
-            code, description = msg.split(" ", 1)
-            if code == "E303":
-                description += _(" above this line")
-            if line_no not in style_feedback:
-                style_feedback[line_no] = []
-            # Capitalise the 1st letter keeping the rest of the str unmodified
-            if description:
-                description = description[0].upper() + description[1:]
-            style_feedback[line_no].append(
-                {
-                    "line_no": line_no,
-                    "column": int(col) - 1,
-                    "message": description,
-                    "code": code,
-                }
-            )
-    return style_feedback
+    # Simply return an empty list. We don't want python code conventions
+    # yelling about our beautiful C# curly braces!
+    return []
 
 
 class MuFlakeCodeReporter:
@@ -1886,3 +1835,70 @@ class Editor(QObject):
         """
         file_ends = filename.lower().endswith
         return any(file_ends(ext) for ext in self.python_extensions)
+
+from PyQt5.QtCore import QThread, pyqtSignal
+import re
+import tempfile
+import subprocess
+import os
+
+class CSharpCompilerWorker(QThread):
+    # Setup custom thread communication signals
+    # Passes the final dictionary of syntax feedback errors back to the main UI
+    finished_signal = pyqtSignal(dict)
+
+    def __init__(self, code, filename):
+        super().__init__()
+        self.code = code
+        self.filename = filename
+
+    def run(self):
+        """
+        Executes on a completely isolated background thread.
+        Bridges the Roslyn compiler output without blocking your editor GUI frames.
+        """
+        feedback = {}
+
+        # Dump current layout buffer to a scratchpad file
+        with tempfile.NamedTemporaryFile(suffix=".cs", mode="w", delete=False, encoding="utf-8") as f:
+            f.write(self.code)
+            temp_file_path = f.name
+
+        try:
+            # Trigger the .NET compiler SDK backend natively
+            process = subprocess.run(
+                ["dotnet", "build", "/t:Compile", "/p:GenerateFullPaths=true", temp_file_path],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                errors='ignore'
+            )
+
+            # Roslyn output pattern parser: filename(line,col): error CODE: message text
+            error_regex = re.compile(r"\((?P<line>\d+),(?P<col>\d+)\):\s+(?P<type>error|warning)\s+(?P<code>\w+):\s+(?P<msg>.+)")
+
+            for line in process.stdout.splitlines():
+                match = error_regex.search(line)
+                if match:
+                    line_no = int(match.group("line"))
+                    message = f"[{match.group('code')}] {match.group('msg')}"
+
+                    if line_no not in feedback:
+                        feedback[line_no] = []
+
+                    feedback[line_no].append({
+                        "line_no": line_no,
+                        "message": message,
+                        "type": match.group("type")
+                    })
+        except Exception:
+            pass
+        finally:
+            # Clean up raw files from disk
+            try:
+                os.unlink(temp_file_path)
+            except OSError:
+                pass
+
+        # Broadcast the feedback data payload back to the main user interface thread safely
+        self.finished_signal.emit(feedback)

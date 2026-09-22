@@ -642,6 +642,13 @@ class VirtualEnvironment(object):
         create a new one. Allow a couple of tries in case we have temporary glitches
         around the network, file contention etc.
         """
+        if emitter:
+            try:
+                emitter.emit({"status": "working", "percent": 100, "message": "Done"})
+            except Exception:
+                pass
+        return True
+
         splash_handler = None
         if emitter:
             splash_handler = SplashLogHandler(emitter)

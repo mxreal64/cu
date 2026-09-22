@@ -89,9 +89,17 @@ class AnimatedSplash(QSplashScreen):
         """
         Update the splash screen with the next frame of the animation.
         """
-        pixmap = self.animation.currentPixmap()
-        self.setPixmap(pixmap)
-        self.setMask(pixmap.mask())
+        try:
+            pixmap = self.animation.currentPixmap()
+            self.setPixmap(pixmap)
+            self.setMask(pixmap.mask())
+        except RuntimeError as e:
+            if "wrapped C/C++ object" in str(e):
+                # The splash screen is dead, meaning the editor is loading.
+                # Cleanly catch it and do nothing.
+                pass
+            else:
+                raise
 
     def draw_log(self, text):
         """
