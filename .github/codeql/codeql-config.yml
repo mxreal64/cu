@@ -1,4 +1,0 @@
-name: "Mu CodeQL configuration"
-
-paths-ignore:
-  - mu/contrib/esptool.py
