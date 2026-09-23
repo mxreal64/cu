@@ -1,0 +1,326 @@
+QToolBar, QToolButton {
+    background: transparent;
+    margin: 0;
+    padding: 0;
+}
+
+QToolBar::separator {
+    background: #666;
+    width: 1px;
+    margin: 6px 3px;
+}
+
+QToolButton#qt_toolbar_ext_button {
+    qproperty-icon: none;
+    margin: 6px 1px;
+    background: yellow;
+}
+
+QToolButton#qt_toolbar_ext_button:hover {
+    background: white;
+}
+
+QToolButton {
+    padding: 4px 2px;
+}
+
+QToolButton:hover, QMenu::item:selected  {
+    background: #666;
+    color: yellow;
+}
+
+QStackedWidget, QWidget, QApplication, QDialog,
+QLabel, QStatusBar, QTabBar, QMenu,
+QDockWidget::title, QHeaderView, QHeaderView::section,
+QListWidget, QTreeView, QTreeView::branch {
+    background-color: black;
+    color: white;
+}
+
+QTextEdit, QPlainTextEdit, QLineEdit {
+    background-color: black;
+    color: white;
+    border: 2px solid white;
+}
+
+QTabBar, QToolBar, QToolButton,
+QTabBar::close-button, QTabBar::close-button:hover, QsciScintilla,
+QMenu::item, QMenu::item:selected, QTreeView, QDockWidget,
+QMainWindow::separator, QScrollBar::handle {
+    border: none;
+}
+
+QDialog, QListWidget, QMessageBox {
+    border: 1px solid white;
+}
+
+QTextEdit:focus, QPlainTextEdit:focus, QLineEdit:focus {
+    border: 2px solid yellow;
+}
+
+QTabBar::tab {
+    border-top: 1px solid #555;
+    border-left: 1px solid #555;
+    border-right: 1px solid #555;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    color: white;
+    padding: 4px 8px;      /* Tab Padding */
+    margin: 0;
+}
+
+QTabBar::tab, QListWidget::item:selected, QListWidget::item:focus,
+QTreeView::item:selected, QTreeView::item:focus {
+    background: #3b3b3b;
+}
+
+QTabBar::tab::hover, QListWidget::item:hover, QTreeView::item:hover {
+    background: #666;
+}
+
+QTabBar::tab::selected {
+    background: #555;
+}
+
+QTabBar::tab QLabel {
+    background: transparent;
+}
+
+QTabBar::tab QPushButton {
+    padding: 3px;
+    margin: 0;
+    background: transparent;
+    border: none;
+    min-width: 10px;
+    min-height: 10px;
+    max-width: 10px;
+    max-height: 10px;
+}
+
+QTabBar::tab QPushButton:hover {
+    background: #c93827;
+    border-radius: 3px;
+    border: none;
+}
+
+QTabWidget::pane {
+    border: none;
+    border-top: 1px solid #555;
+    border-bottom: 1px solid #555;
+}
+
+QTabWidget::tab-bar {
+    subcontrol-position: top left;
+}
+
+QListWidget::item:selected, QListWidget::item:hover, QListWidget::item:focus,
+QTreeView::item:selected, QTreeView::item:hover, QTreeView::item:focus {
+    color: white;
+}
+
+QStatusBar QLabel {
+    padding: 2px;
+    margin: 0;
+}
+
+#DeviceSelector QComboBox {
+    padding: 4px 25px 4px 3px;
+    margin: 2px;
+}
+
+#AdministrationLabel:hover, #AdministrationLabel:focus {
+    background: #666;
+}
+
+QMenu {
+    border: 3px solid yellow;
+}
+
+QMenu::item {
+    padding: 5px 15px;
+}
+
+QMenu::item:disabled {
+    color: gray;
+}
+
+QMenu::separator {
+    border: none;
+    border-bottom: 2px solid yellow;
+    padding: 0px;
+    margin: 0px;
+}
+
+QCheckBox::indicator {
+    border: 1px solid #FFF;
+    width: 16px;
+    height: 16px;
+}
+
+QCheckBox::indicator:checked {
+    image: url(images:checked.png);
+}
+
+QPushButton {
+    background: #2e2e2e;
+    border: 3px solid #aaa;
+    padding: 6px 12px;                /* 1.5 * Tab Padding */
+}
+
+QPushButton:focus, QPushButton:hover {
+    background: #222;
+    color: yellow;
+}
+
+QPushButton:focus {
+    border: 3px solid yellow;
+}
+
+QPushButton:hover {
+    border: 3px solid white;
+}
+
+QPushButton:pressed {
+    background: #111;
+}
+
+QPushButton:disabled {
+    background:#aaa;
+}
+
+QAbstractScrollArea::corner {
+    border-top: 1px solid #555;    /* Border */
+    border-left: 1px solid #555;   /* Border */
+}
+
+QScrollBar, QAbstractScrollArea::corner {
+    background: black;
+}
+
+QScrollBar:horizontal {
+    height: 21px;
+    border-top: 1px solid #555; /* Border */
+    margin: 0px 21px;
+}
+
+QScrollBar:vertical {
+    width: 21px;
+    border-left: 1px solid #555; /* Border */
+    margin: 21px 0px;
+}
+
+QScrollBar::handle {
+    background: white;
+    min-width: 21px;
+    min-height: 21px;
+}
+
+QScrollBar::handle:hover {
+    background: #888;
+}
+
+QScrollBar::add-line, QScrollBar::sub-line {
+    width: 20px;
+    height: 20px;
+    background: #3b3b3b; /* Background Tab */
+    border: none;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::add-line:hover, QScrollBar::sub-line:hover {
+    background: #888;
+}
+
+QScrollBar::sub-line:horizontal {
+    border-top: 1px solid #555;    /* Border */
+    border-right: 1px solid #555;  /* Border */
+    subcontrol-position: left;
+    image: url(images:scroll-left.svg);
+}
+
+QScrollBar::add-line:horizontal, QAbstractScrollArea::corner {
+    border-top: 1px solid #555;    /* Border */
+    border-left: 1px solid #555;   /* Border */
+    subcontrol-position: right;
+}
+
+QScrollBar::add-line:horizontal {
+    image: url(images:scroll-right.svg);
+}
+
+QScrollBar::sub-line:vertical {
+    border-left: 1px solid #555;   /* Border */
+    border-bottom: 1px solid #555; /* Border */
+    image: url(images:scroll-up.svg);
+}
+
+QScrollBar::add-line:vertical {
+    border-left: 1px solid #555;   /* Border */
+    border-top: 1px solid #555;    /* Border */
+    image: url(images:scroll-down.svg);
+}
+
+QDockWidget::title {
+    text-align: left;
+    border-bottom: 1px solid #555;   /* Border */
+    padding: 5px 8px;                  /* Tab Padding */ /* + top/bottom border */
+    margin: 0;
+}
+
+QDockWidget > QWidget {
+    border-bottom: 1px solid #555;   /* Border */
+}
+
+QMainWindow::separator:horizontal,
+QMainWindow::separator:vertical {
+    width: 8px;
+    background: #333;
+}
+
+QMainWindow::separator:horizontal:hover,
+QMainWindow::separator:vertical:hover {
+    background: white;
+}
+
+QHeaderView::section {
+    border-bottom: 1px solid #555;   /* Border */
+}
+
+QTreeView::item, QListWidget::item {
+    padding: 0;
+    margin: 0;
+}
+
+QTreeView::branch:has-children:open {
+    image: url(images:scroll-down.svg);
+}
+
+QTreeView::branch:has-children:closed {
+    image: url(images:scroll-right.svg);
+}
+
+QComboBox {
+    padding: 2px;
+    border: 1px solid white;
+}
+
+QComboBox::drop-down {
+    border: 0;
+    width: 15px;
+    image: unset;
+    padding-right: 2px;
+}
+
+QComboBox::down-arrow {
+    image: url(images:dropdown-arrow-contrast.svg);
+}
+
+QGroupBox {
+    border: 1px solid white;
+    margin-top: 1ex; /* leave space at the top for the title */
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 8px;
+}
